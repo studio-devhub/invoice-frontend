@@ -5,7 +5,6 @@ export const numberToCurrency = function (
   sectionLength: number = 3
 ) {
   let arr = amount.toString().split(".");
-  let intValue = arr[0];
   let decimalValue = arr[1];
 
   if (decimalLength === undefined) {

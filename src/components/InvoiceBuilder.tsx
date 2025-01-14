@@ -1,5 +1,5 @@
 import { Box, IconButton, styled, Typography } from "@mui/material";
-import React, { ChangeEvent, FocusEvent, useState } from "react";
+import { ChangeEvent } from "react";
 import SlotCounter from "react-slot-counter";
 import { numberToCurrency } from "../utils/helper";
 import { Invoice } from "../utils/types";
@@ -16,25 +16,11 @@ const InvoiceBuilder: React.FC<InvoiceBuilderProps> = ({
   setInvoice,
   hitBtn,
 }) => {
-  const [touchedFields, setTouchedFields] = useState({
-    invoiceNumber: false,
-    issueDate: false,
-    dueDate: false,
-    from: false,
-    to: false,
-  });
   const handleInputChange = (
     e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
     setInvoice((prev: Invoice) => ({ ...prev, [name]: value }));
-  };
-
-  const handleBlur = (
-    e: FocusEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
-    const { name } = e.target;
-    setTouchedFields((prev) => ({ ...prev, [name]: true }));
   };
 
   const getTotal = () => {
@@ -56,7 +42,6 @@ const InvoiceBuilder: React.FC<InvoiceBuilderProps> = ({
             placeholder="0001"
             value={invoice.invoiceNumber}
             onChange={handleInputChange}
-            onBlur={handleBlur}
             className={`input-field ${
               !hitBtn && !invoice.dueDate ? "" : "required"
             }`}
@@ -69,7 +54,6 @@ const InvoiceBuilder: React.FC<InvoiceBuilderProps> = ({
             name="issueDate"
             value={invoice.issueDate}
             onChange={handleInputChange}
-            onBlur={handleBlur}
             placeholder="YYYY-MM-DD"
             className={`input-field ${
               !hitBtn && !invoice.issueDate ? "" : "required"
@@ -83,7 +67,6 @@ const InvoiceBuilder: React.FC<InvoiceBuilderProps> = ({
             name="dueDate"
             value={invoice.dueDate}
             onChange={handleInputChange}
-            onBlur={handleBlur}
             placeholder="YYYY-MM-DD"
             className={`input-field ${
               !hitBtn && !invoice.dueDate ? "" : "required"
@@ -105,7 +88,6 @@ Address: 123 Main St, Anytown, USA"
             rows={5}
             value={invoice.from}
             onChange={handleInputChange}
-            onBlur={handleBlur}
             className={`input-field ${
               !hitBtn && !invoice.from ? "" : "required"
             }`}
@@ -123,7 +105,6 @@ Address: 123 Main St, Anytown, USA"
             rows={5}
             value={invoice.to}
             onChange={handleInputChange}
-            onBlur={handleBlur}
             className={`input-field ${
               !hitBtn && !invoice.from ? "" : "required"
             }`}
@@ -149,11 +130,11 @@ Address: 123 Main St, Anytown, USA"
             <Typography
               variant="body1"
               fontWeight={500}
-              fontSize={"1.1rem"}
-              mr={0.09}
-              mt={"2px"}
+              fontSize={"1.23rem"}
+              mr={"2px"}
+              mt={"1px"}
             >
-              US$
+              US $
             </Typography>
             <Typography variant="body1" fontWeight={500} fontSize={"1.25rem"}>
               <SlotCounter
