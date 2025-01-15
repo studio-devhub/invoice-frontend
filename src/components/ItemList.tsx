@@ -14,20 +14,10 @@ interface ItemListProps {
 
 const ItemList: React.FC<ItemListProps> = ({ invoice, setInvoice, hitBtn }) => {
   const handleItemChange = (index: number, name: string, value: string) => {
-    // const { name, value } = e.target;
-
     const updatedItems = [...invoice.items];
     updatedItems[index] = { ...updatedItems[index], [name]: value };
     updatedItems[index].total =
       updatedItems[index].quantity * updatedItems[index].price;
-    console.log(
-      "Name = ",
-      name,
-      "Value = ",
-      value,
-      "T = ",
-      updatedItems[index].total
-    );
     setInvoice((prev: Invoice) => ({ ...prev, items: updatedItems }));
   };
 
@@ -90,7 +80,7 @@ const ItemList: React.FC<ItemListProps> = ({ invoice, setInvoice, hitBtn }) => {
             prefix="$"
             defaultValue={item.price}
             decimalsLimit={2}
-            onValueChange={(value, name, values) =>
+            onValueChange={(value) =>
               handleItemChange(index, "price", value ? value : "")
             }
           />
