@@ -14,11 +14,13 @@
     "@emotion/styled": "^11.14.0",
     "@mui/material": "^6.3.1",
     "@react-pdf/renderer": "^4.1.6",
+    "formik": "^2.4.6",
     "react": "^19.0.0",
     "react-currency-input-field": "^3.9.0",
     "react-dom": "^19.0.0",
     "react-pdf": "^9.2.1",
-    "react-slot-counter": "^3.0.5"
+    "react-slot-counter": "^3.0.5",
+    "yup": "^1.6.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.17.0",
