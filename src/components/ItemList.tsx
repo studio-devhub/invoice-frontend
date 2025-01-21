@@ -1,127 +1,148 @@
-import { Box, styled } from "@mui/material";
+import { Box, Button, styled } from "@mui/material";
+import { Field, FieldArray } from "formik";
 import React from "react";
 import CurrencyInput from "react-currency-input-field";
-import { numberToCurrency } from "../utils/helper";
-import { Invoice } from "../utils/types";
-import { Btn } from "./InvoiceBuilder";
+import { Btn } from "./InvoiceForm";
 import DeleteIcon from "./svg-component/DeleteIcon";
 
 interface ItemListProps {
-  invoice: Invoice;
-  setInvoice: any;
-  hitBtn: boolean;
+  formik: any;
+  items: any[];
+  setFieldValue: (field: string, value: any) => void;
 }
 
-const ItemList: React.FC<ItemListProps> = ({ invoice, setInvoice, hitBtn }) => {
-  const handleItemChange = (index: number, name: string, value: string) => {
-    const updatedItems = [...invoice.items];
-    updatedItems[index] = { ...updatedItems[index], [name]: value };
-    updatedItems[index].total =
-      updatedItems[index].quantity * updatedItems[index].price;
-    setInvoice((prev: Invoice) => ({ ...prev, items: updatedItems }));
-  };
-
-  const addItem = (): void => {
-    setInvoice((prev: Invoice) => ({
-      ...prev,
-      items: [
-        ...prev.items,
-        {
-          id: Date.now().toString(),
-          description: "",
-          quantity: 1,
-          price: 0,
-          total: 0,
-        },
-      ],
-    }));
-  };
-
-  const deleteItem = (index: number): void => {
-    const updatedItems = invoice.items.filter((_, i) => i !== index);
-    setInvoice((prev: Invoice) => ({ ...prev, items: updatedItems }));
-  };
+const ItemList: React.FC<ItemListProps> = ({
+  formik,
+  items,
+  setFieldValue,
+}) => {
+  const calculateSubtotal = (quantity: number, price: number) =>
+    quantity * price;
 
   return (
-    <ItemSection>
-      <ItemHeader>
-        <Box>Description</Box>
-        <Box>Quantity</Box>
-        <Box>Price</Box>
-        <Box>Total</Box>
-      </ItemHeader>
+    <FieldArray name="items">
+      {({ push, remove }) => (
+        <ItemSection>
+          <ItemHeader>
+            <Box>Description</Box>
+            <Box>Quantity</Box>
+            <Box>Price</Box>
+            <Box>Total</Box>
+          </ItemHeader>
+          {items.map((item, index) => (
+            <ItemRow>
+              {/* Description */}
+              <Box>
+                <Field
+                  name={`items.${index}.description`}
+                  placeholder={
+                    formik.errors.items?.[index]?.description &&
+                    formik.touched.items?.[index]?.description
+                      ? "The description field is mandatory"
+                      : "Description"
+                  }
+                  className={
+                    formik.errors.items?.[index]?.description &&
+                    formik.touched.items?.[index]?.description
+                      ? "required placeholder-error"
+                      : ""
+                  }
+                />
+              </Box>
 
-      {invoice.items.map((item: any, index: number) => (
-        <ItemRow>
-          <input
-            type="text"
-            name="description"
-            placeholder="Description"
-            value={item.description}
-            onChange={(e) =>
-              handleItemChange(index, "description", e.target.value)
-            }
-            className={`input-field ${
-              !hitBtn && !item.description ? "" : "required"
-            }`}
-          />
-          <input
-            type="number"
-            name="quantity"
-            value={item.quantity}
-            onChange={(e) =>
-              handleItemChange(index, "quantity", e.target.value)
-            }
-            className="input-field"
-          />
-          <CurrencyInput
-            id="input-example"
-            name="price"
-            prefix="$"
-            defaultValue={item.price}
-            decimalsLimit={2}
-            onValueChange={(value) =>
-              handleItemChange(index, "price", value ? value : "")
-            }
-          />
-          <Box
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "end",
-            }}
-          >
-            {numberToCurrency(item.total, "$")}
+              {/* Quantity */}
+              <Box>
+                <Field
+                  name={`items.${index}.quantity`}
+                  type="number"
+                  onChange={(e: any) => {
+                    const quantity = parseFloat(e.target.value) || 0;
+                    const price = item.price;
+                    const subtotal = calculateSubtotal(quantity, price);
+                    setFieldValue(`items.${index}.quantity`, quantity);
+                    setFieldValue(`items.${index}.subtotal`, subtotal);
+                  }}
+                />
+              </Box>
+
+              {/* Price */}
+              <Box>
+                <CurrencyInput
+                  id={`items.${index}.price`}
+                  name={`items.${index}.price`}
+                  decimalsLimit={2}
+                  prefix="$"
+                  defaultValue={item.price}
+                  onValueChange={(value) => {
+                    const price = parseFloat(value || "0");
+                    const quantity = item.quantity;
+                    const subtotal = calculateSubtotal(quantity, price);
+                    setFieldValue(`items.${index}.price`, price);
+                    setFieldValue(`items.${index}.subtotal`, subtotal);
+                  }}
+                />
+              </Box>
+
+              {/* Subtotal */}
+              <Box>
+                <CurrencyInput
+                  id={`items.${index}.subtotal`}
+                  name={`items.${index}.subtotal`}
+                  decimalsLimit={2}
+                  prefix="$"
+                  value={item.subtotal}
+                  readOnly
+                />
+              </Box>
+
+              {/* Delete Button */}
+              <Btn disableRipple onClick={() => remove(index)}>
+                <DeleteIcon />
+              </Btn>
+            </ItemRow>
+          ))}
+
+          {/* Add New Item Button */}
+          <Box>
+            <AddBtn
+              onClick={() =>
+                push({ description: "", quantity: 1, price: 0, subtotal: 0 })
+              }
+            >
+              + Add New Item
+            </AddBtn>
           </Box>
-          <Btn disableRipple onClick={() => deleteItem(index)}>
-            <DeleteIcon />
-          </Btn>
-        </ItemRow>
-      ))}
-      <Box>
-        <button style={{ margin: "10px 7px" }} onClick={addItem}>
-          + Add New Item
-        </button>
-      </Box>
-    </ItemSection>
+        </ItemSection>
+      )}
+    </FieldArray>
   );
 };
 
 export default ItemList;
 
-const ItemSection = styled(Box)(() => ({
-  display: "flex",
-  flexDirection: "column",
-  "& button": {
-    backgroundColor: "transparent",
-    border: "none",
-    color: "#18181b66",
-    cursor: "pointer",
-    "&:hover": {
-      color: "#18181bcc",
+const ItemSection = styled(Box)(({ theme }) => [
+  {
+    display: "flex",
+    flexDirection: "column",
+    "& button": {
+      backgroundColor: "transparent",
+      border: "none",
+      color: "#18181b66",
+      cursor: "pointer",
+      "&:hover": {
+        color: "#18181bcc",
+      },
     },
   },
-}));
+  theme.applyStyles("dark", {
+    "& button": {
+      color: "#a6a5a5",
+      "&:hover": {
+        color: "#fafafa",
+      },
+    },
+  }),
+]);
 const ItemHeader = styled(Box)(({ theme }) => [
   {
     display: "flex",
@@ -159,9 +180,19 @@ const ItemRow = styled(Box)(() => ({
     backgroundColor: "transparent",
     minHeight: "27px",
     paddingLeft: "7px",
+    "& input": {
+      maxWidth: "100%",
+      textAlign: "right",
+      minHeight: "27px",
+    },
     "&:first-child": {
       width: "49%",
       textAlign: "left",
+      paddingLeft: 0,
+      "& input": {
+        width: "90%",
+        textAlign: "left",
+      },
     },
     "&:last-child": {
       position: "absolute",
@@ -169,15 +200,24 @@ const ItemRow = styled(Box)(() => ({
       right: 0,
       transform: "translate(100%)",
       padding: 0,
+      marginTop: "-1px",
       border: "none",
       "& > svg": {
-        color: "#a6a5a5",
         width: "0.9rem",
         height: "0.9rem",
-      },
-      "&:hover svg": {
-        color: "#282828",
       },
     },
   },
 }));
+const AddBtn = styled(Button)(({ theme }) => [
+  {
+    margin: "10px 7px",
+    marginLeft: 0,
+    textTransform: "unset",
+    fontSize: "13px",
+    padding: 0,
+  },
+  theme.applyStyles("dark", {
+    borderBottomColor: "#27272a",
+  }),
+]);
